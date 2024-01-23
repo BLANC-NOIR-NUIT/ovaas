@@ -4,10 +4,9 @@ import customtkinter
 import os
 from PIL import Image, ImageTk, ImageOps
 import cv2
-from ovvas import do_ovaas
-from age_estimation import Age_Estimation
-from pose_estimation import PoseEstimation
-from object_d import object_detection
+import glob
+#from ovvas import do_ovaas
+
 
 import threading
 
@@ -30,6 +29,7 @@ class App(customtkinter.CTk):
         self.thread_set = False
         self.start_movie = False
         self.video_frame = None
+        self.generated_video_path = None
         
         # Entry()を使う場合文字列を操作することが多く、一般的にはStringVarを使う。
         # StringVarを運用させれば、後からエントリの文字列が変わっても、StringVarの値も変わる（同期されている）
@@ -74,26 +74,24 @@ class App(customtkinter.CTk):
         self.button_open = customtkinter.CTkButton(master=self, command=self.button_open_callback, text="実行", font=self.fonts)
         self.button_open.grid(row=0, column=2, padx=10, pady=(0,10))
         
-        
         # 停止ボタン
         self.button_open = customtkinter.CTkButton(master=self, command=self.button_stop_callback, text="停止", font=self.fonts)
         self.button_open.grid(row=0, column=3, padx=10, pady=(0,10))
         
 
         # ラジオボックス
-        self.radiobutton_age = customtkinter.CTkRadioButton(master=self, text="action_recognition", variable=self.selected_option, value="face-age-estimation", command=self.on_radiobox_select,)
+        self.radiobutton_age = customtkinter.CTkRadioButton(master=self, text="action_recognition", variable=self.selected_option, value="face-age-estimation", command=self.on_radiobox_select)
         self.radiobutton_age.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="ne")
 
         self.radiobutton_pose = customtkinter.CTkRadioButton(master=self, text="pose-estimation", variable=self.selected_option, value="pose-estimation", command=self.on_radiobox_select)
-        self.radiobutton_pose.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="n" )
+        self.radiobutton_pose.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="n")
 
         self.radiobutton_object = customtkinter.CTkRadioButton(master=self, text="object-detection", variable=self.selected_option, value="object-detection", command=self.on_radiobox_select)
         self.radiobutton_object.grid(row=1, column=2, padx=10, pady=(0, 10), sticky="nw")
 
-
         # 生成された動画を表示するキャンバスの作成
         self.canvas = tk.Canvas(master=self, width=640, height=480)
-        self.canvas.grid(row=2, columnspan=4, padx=10, pady=(0, 10), sticky="sw")
+        self.canvas.grid(row=2, columnspan=4, padx=10, pady=(0, 10))
 
     '''
         # 保存ボタンを置く
@@ -113,17 +111,17 @@ class App(customtkinter.CTk):
         self.grid_columnconfigure(0, weight=1)
 
         current_dir = os.path.abspath(os.path.dirname(__file__))
-        self.movie_path = tk.filedialog.askopenfilename(filetypes=[("Video Files", ("*.MP4", "*.AVI", "*.BIN", "*.XML"))],initialdir=current_dir)
+        self.movie_path = tk.filedialog.askopenfilename(filetypes=[("MP4ファイル", ("*.MP4", "*.BIN", "*.XML"))],initialdir=current_dir)
 
         # ファイルパスをテキストボックスに記入
         self.textbox.delete(0, tk.END)
         self.textbox.insert(0, self.movie_path)
         
         # Movie standby.
-        #self.set_movie = True
-        #self.thread_set = True
-        #self.thread_main = threading.Thread(target=self.main_thread_func)
-        #self.thread_main.start()
+        self.set_movie = True
+        self.thread_set = True
+        self.thread_main = threading.Thread(target=self.main_thread_func)
+        self.thread_main.start()
 
     def on_radiobox_select(self):
         """
@@ -137,42 +135,38 @@ class App(customtkinter.CTk):
         """
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
-
+        
         self.start_movie = True
 
+        '''
         file_path = self.textbox.get()
         model_name=self.result
         do_ovaas(file_path, model_name)
-
         '''
-        if model_name == "object-detection":
-            self.result_path = object_detection(result_video)
-        elif model_name == "human-pose-estimation":
-            self.result_path = PoseEstimation(result_video)
-        '''
-        self.set_movie = True
-        self.thread_set = True
-        self.thread_main = threading.Thread(target=self.main_thread_func)
-        self.thread_main.start()
-    
+        
     def button_stop_callback(self):
         self.start_movie = False
         self.set_movie = False
     
     def main_thread_func(self):
 
+        self.list_of_files = glob.glob('C:\\Users\DX\OneDrive\デスクトップ\ovaas\result')
 
-        self.video_cap = cv2.VideoCapture(self.result_path)
-        #ret, self.video_frame = self.video_cap.read()
+        if not self.list_of_files:
+            print("No files found in the specified directory.")
+            return 
+        self.lastes_file = max(self.list_of_files, key=os.path.getctime)
+        
+        self.video_cap = cv2.VideoCapture(self.movie_path)
+        ret, self.video_frame =  self.lastes_file
 
-        if not self.video_cap.isOpened():
-            print("Error: Couldn't open video file.")
-            return
-
+        if self.video_frame is None:
+            print("None")
 
         while self.set_movie:
 
             if self.start_movie:
+
 
                 ret, self.video_frame = self.video_cap.read()
 
@@ -188,6 +182,8 @@ class App(customtkinter.CTk):
                     )
                 else:
                     self.start_movie = False
+
+    
     
     def replace_canvas_image(self, pic_img, canvas_name, canvas_name_create):
         canvas_name.photo = ImageTk.PhotoImage(pic_img)
@@ -224,23 +220,6 @@ class App(customtkinter.CTk):
 
         return resized_img, resized_img_canvas
 
-    
-        
-
-    '''
-    def button_save_callback(self):
-        """
-        保存ボタンが押されたときのコールバック。MP4に出力する
-        """
-        # 行方向のマスのレイアウトを設定する。リサイズしたときに一緒に拡大したい行をweight 1に設定。
-        self.grid_rowconfigure(1, weight=1)
-        # 列方向のマスのレイアウトを設定する
-        self.grid_columnconfigure(0, weight=1)
-
-        file_path = self.textbox.get()
-        if file_path is not None:
-            file, ext = os.path.splitext(file_path)
-    '''     
             
         
 
