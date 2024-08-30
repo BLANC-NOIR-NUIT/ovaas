@@ -5,12 +5,10 @@ import os
 from PIL import Image, ImageTk, ImageOps
 import cv2
 import glob
-#from ovvas import do_ovaas
+from ovvas import do_ovaas
 
 
 import threading
-
-#from ovvas import do_ovaas
 
 FONT_TYPE = "meiryo"
 
@@ -57,7 +55,7 @@ class App(customtkinter.CTk):
         # 列方向のマスのレイアウトを設定する
         self.grid_columnconfigure(0, weight=1)
 
-       
+
         # ファイルパスを指定するテキストボックス。これだけ拡大したときに、幅が広がるように設定する。
         self.textbox = customtkinter.CTkEntry(master=self, placeholder_text="ファイルを読み込む", width=120, font=self.fonts)
         self.textbox.grid(row=0, column=0, padx=10, pady=(0,10), sticky="nwe")
@@ -138,11 +136,11 @@ class App(customtkinter.CTk):
         
         self.start_movie = True
 
-        '''
+        
         file_path = self.textbox.get()
         model_name=self.result
         do_ovaas(file_path, model_name)
-        '''
+        
         
     def button_stop_callback(self):
         self.start_movie = False
@@ -150,7 +148,7 @@ class App(customtkinter.CTk):
     
     def main_thread_func(self):
 
-        self.list_of_files = glob.glob('C:\\Users\DX\OneDrive\デスクトップ\ovaas\result')
+        self.list_of_files = glob.glob('/Users/oosakiharuna/Documents/ovaas-main/result')
 
         if not self.list_of_files:
             print("No files found in the specified directory.")
@@ -158,7 +156,8 @@ class App(customtkinter.CTk):
         self.lastes_file = max(self.list_of_files, key=os.path.getctime)
         
         self.video_cap = cv2.VideoCapture(self.movie_path)
-        ret, self.video_frame =  self.lastes_file
+        ret, self.video_frame, *_ = self.lastes_file
+
 
         if self.video_frame is None:
             print("None")
