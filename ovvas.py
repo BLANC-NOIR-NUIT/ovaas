@@ -12,9 +12,9 @@ def do_ovaas(file_path, model_name):
             PoseEstimation(file_path)
 
         #elif model_name == "face-age-estimation":
-         #   age_gender_estimation(file_path)
+        #   age_gender_estimation(file_path)
 
-'''
+
 def do_ovaas_camera(model_name):
         if model_name == "object-detection":
             object_detection_camera()
@@ -24,4 +24,4 @@ def do_ovaas_camera(model_name):
 
         #elif model_name == "face-age-estimation":
          #   age_gender_estimation(file_path)
-'''
+
