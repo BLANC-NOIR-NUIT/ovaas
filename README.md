@@ -7,5 +7,7 @@
 インテル製のCPUやGPU、VPU、FPGAなどのパフォーマンスを最大限に活用して、画像関係をはじめ、自然言語処理や音声処理など幅広いディーブラーニング・モデルで推論を最適化し高速化する推論エンジン／ツールスイート。インテル株式会社が無償で提供している。
 
 ***DEMO:***
-![Uploading 画面収録 2024-08-30 14.58.37.gif…](/Users/oosakiharuna/Documents/photo/画面収録 2024-08-30 14.58.37.gif)
+![画面収録 2024-08-30 14 58 37](https://github.com/user-attachments/assets/fcf8cd81-7d12-40c6-99b1-abe393064bda)
+
+
 
